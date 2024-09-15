@@ -1,15 +1,15 @@
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, useState } from "react";
 import { Button, Form, Segment } from "semantic-ui-react";
 import { Activity } from "../../../app/models/activity";
-import { create } from "domain";
 
 interface Props {
     activity: Activity | undefined;
     closeForm: () => void;
     createOrEdit: (activity: Activity) => void;
+    submitting: boolean;
 }
 
-export default function ActivityForm({ activity: selectedActivity, closeForm, createOrEdit }: Props) {
+export default function ActivityForm({ activity: selectedActivity, closeForm, createOrEdit, submitting }: Props) {
     // If the activity object is null, set the initial state to an empty object
     const initialState = selectedActivity ?? {
         id: "",
@@ -22,7 +22,7 @@ export default function ActivityForm({ activity: selectedActivity, closeForm, cr
     };
 
     // Set the activity state to the initial state
-    const [activity, setActivity] = React.useState(initialState);
+    const [activity, setActivity] = useState(initialState);
 
     // Handle the form submit event
     function handleSubmit() {
@@ -60,6 +60,7 @@ export default function ActivityForm({ activity: selectedActivity, closeForm, cr
                     onChange={handleInputChange}
                 />
                 <Form.Input
+                    type="date"
                     placeholder="Date"
                     value={activity.date}
                     name="date"
@@ -78,6 +79,7 @@ export default function ActivityForm({ activity: selectedActivity, closeForm, cr
                     onChange={handleInputChange}
                 />
                 <Button
+                    loading={submitting}
                     floated="right"
                     positive
                     type="submit"
