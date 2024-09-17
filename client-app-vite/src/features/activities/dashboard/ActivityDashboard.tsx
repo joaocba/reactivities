@@ -1,15 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Grid } from "semantic-ui-react";
 import ActivityList from "./ActivityList";
-import ActivityDetails from "../details/ActivityDetails";
-import ActivityForm from "../form/ActivityForm";
 import { useStore } from "../../../app/stores/store";
 import { observer } from "mobx-react-lite";
+import LoadingComponent from "../../../app/layout/LoadingComponent";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export default observer(function ActivityDashboard() {
+    // Hook that allows you to access the store
     const { activityStore } = useStore();
-    const { selectedActivity, editMode } = activityStore;
+    const { loadActivities, activityRegistry } = activityStore;
+
+    // UseEffect is a hook that runs after the first render and after every update
+    useEffect(() => {
+        if (activityRegistry.size <= 1) loadActivities();
+    }, [activityRegistry.size, loadActivities]);
+
+    if (activityStore.loadingInitial) return <LoadingComponent content="Loading app..." />;
 
     return (
         <Grid>
@@ -17,9 +24,7 @@ export default observer(function ActivityDashboard() {
                 <ActivityList />
             </Grid.Column>
             <Grid.Column width="6">
-                {/* The && operator is used to render the ActivityDetails component only if the activities array has at least one element */}
-                {selectedActivity && !editMode && <ActivityDetails />}
-                {editMode && <ActivityForm />}
+                <h2>Activity filters</h2>
             </Grid.Column>
         </Grid>
     );

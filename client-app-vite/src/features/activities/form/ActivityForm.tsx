@@ -1,15 +1,21 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { Button, Form, Segment } from "semantic-ui-react";
 import { useStore } from "../../../app/stores/store";
 import { observer } from "mobx-react-lite";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { Activity } from "../../../app/models/activity";
+import LoadingComponent from "../../../app/layout/LoadingComponent";
+import { v4 as uuid } from "uuid";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export default observer(function ActivityForm() {
     const { activityStore } = useStore();
-    const { selectedActivity, closeForm, createActivity, updateActivity, loading } = activityStore;
+    const { selectedActivity, createActivity, updateActivity, loading, loadActivity, loadingInitial } = activityStore;
+    const { id } = useParams();
+    const navigate = useNavigate();
 
-    // If the activity object is null, set the initial state to an empty object
-    const initialState = selectedActivity ?? {
+    // Set the activity state
+    const [activity, setActivity] = useState<Activity>({
         id: "",
         title: "",
         category: "",
@@ -17,16 +23,22 @@ export default observer(function ActivityForm() {
         date: "",
         city: "",
         venue: "",
-    };
+    });
 
-    // Set the activity state to the initial state
-    const [activity, setActivity] = useState(initialState);
+    // UseEffect hook to load the activity if the id is present
+    useEffect(() => {
+        if (id) loadActivity(id).then((activity) => setActivity(activity!));
+    }, [id, loadActivity]);
 
     // Handle the form submit event
     function handleSubmit() {
         // If the activity id is empty, create a new activity, else update the existing activity
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        activity.id ? updateActivity(activity) : createActivity(activity);
+        if (!activity.id) {
+            activity.id = uuid();
+            createActivity(activity).then(() => navigate(`/activities/${activity.id}`)); // Navigate to the activity details page
+        } else {
+            updateActivity(activity).then(() => navigate(`/activities/${activity.id}`)); // Navigate to the activity details page
+        }
     }
 
     // Handle the input change event, and update the activity state with the new value
@@ -34,6 +46,9 @@ export default observer(function ActivityForm() {
         const { name, value } = event.target;
         setActivity({ ...activity, [name]: value }); // The spread operator is used to copy the existing activity object and update the value of the changed property
     }
+
+    // If the loadingInitial is true, display a loading message
+    if (loadingInitial) return <LoadingComponent content="Loading..." />;
 
     return (
         <Segment clearing>
@@ -86,7 +101,8 @@ export default observer(function ActivityForm() {
                     content="Submit"
                 />
                 <Button
-                    onClick={closeForm}
+                    as={Link}
+                    to="/activities"
                     floated="right"
                     type="button"
                     content="Cancel"

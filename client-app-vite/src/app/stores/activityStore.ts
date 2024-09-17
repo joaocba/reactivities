@@ -9,7 +9,7 @@ export default class ActivityStore {
     selectedActivity: Activity | undefined = undefined; // This is an observable activity
     editMode = false;
     loading = false;
-    loadingInitial = true;
+    loadingInitial = false;
 
     // Constructor to initialize the store and make it observable
     constructor() {
@@ -23,6 +23,7 @@ export default class ActivityStore {
 
     // Method to load activities
     loadActivities = async () => {
+        this.loadingInitial = true;
         try {
             // Call the list method from the agent
             const activities = await agent.Activities.list();
@@ -31,8 +32,7 @@ export default class ActivityStore {
             runInAction(() => {
                 // For each activity, split the date and take the first part (the date)
                 activities.forEach((activity) => {
-                    activity.date = activity.date.split("T")[0];
-                    this.activityRegistry.set(activity.id, activity);
+                    this.setActivity(activity);
                 });
                 this.loadingInitial = false;
             });
@@ -44,26 +44,41 @@ export default class ActivityStore {
         }
     };
 
-    // Method to view an activity
-    selectActivity = (id: string) => {
-        this.selectedActivity = this.activityRegistry.get(id);
+    // Load a single activity
+    loadActivity = async (id: string) => {
+        let activity = this.getActivity(id);
+
+        if (activity) {
+            this.selectedActivity = activity;
+            return activity;
+        } else {
+            this.loadingInitial = true;
+            try {
+                activity = await agent.Activities.details(id);
+                this.setActivity(activity);
+
+                runInAction(() => {
+                    this.selectedActivity = activity;
+                    this.loadingInitial = false;
+                });
+
+                return activity;
+            } catch (error) {
+                console.log(error);
+                this.loadingInitial = false;
+            }
+        }
     };
 
-    // Method to cancel the selected activity
-    cancelSelectActivity = () => {
-        this.selectedActivity = undefined;
+    // Helper method to set an activity
+    private setActivity = (activity: Activity) => {
+        activity.date = activity.date.split("T")[0];
+        this.activityRegistry.set(activity.id, activity);
     };
 
-    // Method to open the form
-    openForm = (id?: string) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        id ? this.selectActivity(id) : this.cancelSelectActivity();
-        this.editMode = true;
-    };
-
-    // Method to close the form
-    closeForm = () => {
-        this.editMode = false;
+    // Helper method to get a single activity
+    private getActivity = (id: string) => {
+        return this.activityRegistry.get(id);
     };
 
     // Method to create an activity
@@ -123,8 +138,6 @@ export default class ActivityStore {
             runInAction(() => {
                 // Filter out the activity with the specified id
                 this.activityRegistry.delete(id);
-                // Check if the selected activity has the specified id, and cancel the selected activity
-                if (this.selectedActivity?.id === id) this.cancelSelectActivity();
                 this.loading = false;
             });
         } catch (error) {

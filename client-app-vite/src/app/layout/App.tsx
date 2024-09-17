@@ -1,31 +1,31 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Container } from "semantic-ui-react";
 import NavBar from "./NavBar";
-import ActivityDashboard from "../../features/activities/dashboard/ActivityDashboard";
-import LoadingComponent from "./LoadingComponent";
-import { useStore } from "../stores/store";
 import { observer } from "mobx-react-lite";
+import { Outlet, useLocation } from "react-router-dom";
+import HomePage from "../../features/home/Home";
 
+// eslint-disable-next-line react-refresh/only-export-components
 function App() {
-    // Hook that allows you to access the store
-    const { activityStore } = useStore();
-
-    // UseEffect is a hook that runs after the first render and after every update
-    useEffect(() => {
-        // Call the loadActivities method from the activityStore
-        activityStore.loadActivities();
-    }, [activityStore]); // The empty array ensures that this effect runs only once, else it will run multiple times
-
-    if (activityStore.loadingInitial) return <LoadingComponent content="Loading activities..." />;
+    const location = useLocation();
 
     return (
         <>
-            <NavBar />
-            <Container style={{ marginTop: "7em" }}>
-                <ActivityDashboard />
-            </Container>
+            {/* Check location and it is "/" then render Home page component */}
+            {location.pathname === "/" ? (
+                <HomePage />
+            ) : (
+                <>
+                    <NavBar />
+                    <Container style={{ marginTop: "7em" }}>
+                        {/* Outlet will automatically be swapped with the according URL and matching component has defined on the Routes.tsx */}
+                        <Outlet />
+                    </Container>
+                </>
+            )}
         </>
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export default observer(App);
