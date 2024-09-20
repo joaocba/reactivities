@@ -2,6 +2,7 @@ import { Activity } from "./../models/activity";
 import { makeAutoObservable, runInAction } from "mobx";
 import agent from "../api/agent";
 import { v4 as uuid } from "uuid";
+import { format } from "date-fns";
 
 // This is a MobX store that will be used to manage the state of the Activity component.
 export default class ActivityStore {
@@ -19,7 +20,7 @@ export default class ActivityStore {
     // Computed Get the activities by date
     get activitiesByDate() {
         // Sort the activities by date DESC
-        return Array.from(this.activityRegistry.values()).sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+        return Array.from(this.activityRegistry.values()).sort((a, b) => b.date!.getTime() - a.date!.getTime());
     }
 
     // Computed Get the grouped activities
@@ -27,7 +28,7 @@ export default class ActivityStore {
         // Return the grouped activities by date as an array of key-value pairs
         return Object.entries(
             this.activitiesByDate.reduce((activities, activity) => {
-                const date = activity.date;
+                const date = format(activity.date!, "dd MMM yyyy");
                 // If the date exists, add the activity to the date, otherwise create a new date with the activity
                 activities[date] = activities[date] ? [...activities[date], activity] : [activity];
                 return activities;
@@ -86,7 +87,7 @@ export default class ActivityStore {
 
     // Helper method to set an activity
     private setActivity = (activity: Activity) => {
-        activity.date = activity.date.split("T")[0];
+        activity.date = new Date(activity.date!);
         this.activityRegistry.set(activity.id, activity);
     };
 
