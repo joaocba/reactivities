@@ -10,6 +10,7 @@ namespace API.Controllers
 
         // Queries use ActionResult, Commands use IActionResult
 
+        [AllowAnonymous]
         [HttpGet] //api/activities
         public async Task<IActionResult> GetActivities()
         {

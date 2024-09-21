@@ -12,7 +12,7 @@ namespace API.DTOs
         public string Email { get; set; }
 
         [Required]
-        [RegularExpression(@"(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{4.8}$", ErrorMessage = "Password must be at least 4 characters long and contain at least one number, one uppercase letter and one lowercase letter")]
+        [RegularExpression(@"(?=.*[^A-Za-z])(?=.*[A-Z])(?=.*[a-z]).{4,}$", ErrorMessage = "Password must be at least 4 characters long and contain at least one number, one uppercase letter and one lowercase letter")]
         public string Password { get; set; }
 
         [Required]

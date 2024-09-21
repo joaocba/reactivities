@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using API.DTOs;
 using API.Services;
 using Domain;
@@ -20,7 +21,6 @@ namespace API.Controllers
             _userManager = userManager;
         }
 
-
         [AllowAnonymous] // Allow anonymous users to access this endpoint
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
@@ -28,7 +28,7 @@ namespace API.Controllers
             // Get the user from the database using the email address
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
-            if (user == null) return Unauthorized("Invalid email");
+            if (user == null) return Unauthorized();
 
             // Check if the password is correct
             var result = await _userManager.CheckPasswordAsync(user, loginDto.Password);
@@ -41,20 +41,22 @@ namespace API.Controllers
             return Unauthorized();
         }
 
-        [AllowAnonymous] // Allow anonymous users to access this endpoint
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
             // Check if the username already exists in the database
-            if (await _userManager.Users.AnyAsync(u => u.UserName == registerDto.Username))
+            if (await _userManager.Users.AnyAsync(x => x.UserName == registerDto.Username))
             {
-                return BadRequest("Username already exists");
+                ModelState.AddModelError("username", "Username taken");
+                return ValidationProblem();
             }
 
             // Check if the email already exists in the database
             if (await _userManager.Users.AnyAsync(x => x.Email == registerDto.Email))
             {
-                return BadRequest("Email already exists");
+                ModelState.AddModelError("email", "Email taken");
+                return ValidationProblem();
             }
 
             // Register the user
@@ -72,7 +74,7 @@ namespace API.Controllers
             if (result.Succeeded)
             {
                 return CreateUserObject(user);
-            };
+            }
 
             return BadRequest(result.Errors);
         }
@@ -82,7 +84,7 @@ namespace API.Controllers
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
             // Get the current user from the database that match the email address from the logged in user
-            var user = await _userManager.FindByEmailAsync(User.Identity.Name);
+            var user = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
 
             return CreateUserObject(user);
         }

@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
-import { Activity } from "../models/activity";
 import { toast } from "react-toastify";
+import { Activity } from "../models/activity";
+import { User, UserFormValues } from "../models/user";
 import { router } from "../router/Routes";
 import { store } from "../stores/store";
 
@@ -13,6 +14,16 @@ const sleep = (delay: number) => {
 
 // Set the base URL for the axios requests
 axios.defaults.baseURL = "http://localhost:5000/api";
+
+// Set the token for the axios requests
+const responseBody = <T>(response: AxiosResponse<T>) => response.data; // This is the type safety for the response body <T>
+
+// Set the token for the axios requests so that the token is sent with the request
+axios.interceptors.response.use((config) => {
+    const token = store.commonStore.token;
+    if (token && config.headers) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+});
 
 // Set the request interceptor for the axios requests, an interceptor is a middleware that can intercept the request and response
 axios.interceptors.response.use(
@@ -59,12 +70,9 @@ axios.interceptors.response.use(
     }
 );
 
-// Set the token for the axios requests
-const responseBody = <T>(response: AxiosResponse<T>) => response.data; // This is the type safety for the response body <T>
-
 // Set the requests for the axios requests
 const requests = {
-    get: <T>(url: string) => axios.get<T>(url).then(responseBody), // The <T> is a generic type that allows you to specify the type of the response
+    get: <T>(url: string) => axios.get<T>(url).then(responseBody),
     post: <T>(url: string, body: {}) => axios.post<T>(url, body).then(responseBody),
     put: <T>(url: string, body: {}) => axios.put<T>(url, body).then(responseBody),
     del: <T>(url: string) => axios.delete<T>(url).then(responseBody),
@@ -72,16 +80,24 @@ const requests = {
 
 // Set the Activities object for the axios requests
 const Activities = {
-    list: () => requests.get<Activity[]>("/activities"),
+    list: () => requests.get<Activity[]>(`/activities`),
     details: (id: string) => requests.get<Activity>(`/activities/${id}`),
-    create: (activity: Activity) => requests.post<void>("/activities", activity),
+    create: (activity: Activity) => requests.post<void>(`/activities`, activity),
     update: (activity: Activity) => requests.put<void>(`/activities/${activity.id}`, activity),
     delete: (id: string) => requests.del<void>(`/activities/${id}`),
+};
+
+// Set the Account object for the axios requests
+const Account = {
+    current: () => requests.get<User>("account"),
+    login: (user: UserFormValues) => requests.post<User>("/account/login", user),
+    register: (user: UserFormValues) => requests.post<User>("/account/register", user),
 };
 
 // Set the agent object for the axios requests
 const agent = {
     Activities,
+    Account,
 };
 
 export default agent;

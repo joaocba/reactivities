@@ -6,6 +6,7 @@ interface Props {
     placeholder: string;
     name: string;
     label?: string;
+    type?: string;
 }
 
 // Generic reusable text input field component using Formik and Semantic UI
