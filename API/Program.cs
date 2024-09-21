@@ -1,17 +1,27 @@
 using API.Extensions;
 using API.Middleware;
-using Application.Activities;
-using Application.Core;
-using MediatR;
+using Domain;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers(opt =>
+{
+    var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build(); // All controllers require authentication
+    opt.Filters.Add(new AuthorizeFilter(policy));
+}
+);
+
 // Several services moved to ApplicationServiceExtensions.cs as an extension of this file
 builder.Services.AddApplicationServices(builder.Configuration);
+
+// Add Identity services to the container
+builder.Services.AddIdentityServices(builder.Configuration);
 
 
 var app = builder.Build();
@@ -28,6 +38,8 @@ if (app.Environment.IsDevelopment())
 // Use CORS policy before Authorization
 app.UseCors("CorsPolicy");
 
+// Use the authentication and authorization middleware (authentication should be before authorization)
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
@@ -39,8 +51,9 @@ var services = scrope.ServiceProvider;
 try
 {
     var context = services.GetRequiredService<DataContext>();
+    var userManager = services.GetRequiredService<UserManager<AppUser>>();
     await context.Database.MigrateAsync();
-    await Seed.SeedData(context); // Seed data to the database after migration buta async
+    await Seed.SeedData(context, userManager); // Seed data to the database after migration buta async
 }
 catch (Exception ex)
 {

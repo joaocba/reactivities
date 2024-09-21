@@ -1,5 +1,6 @@
 using Application.Activities;
 using Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -15,6 +16,7 @@ namespace API.Controllers
             return HandleResult(await Mediator.Send(new List.Query()));
         }
 
+        [Authorize] // Only authorized users can access this endpoint
         [HttpGet("{id}")] //api/activities/fdfkdffdfd
         public async Task<IActionResult> GetActivity(Guid id)
         {
