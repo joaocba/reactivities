@@ -1,8 +1,11 @@
-import { Activity } from "./../models/activity";
+import { User } from "./../models/user";
+import { Activity, ActivityFormValues } from "./../models/activity";
 import { makeAutoObservable, runInAction } from "mobx";
 import agent from "../api/agent";
 import { v4 as uuid } from "uuid";
 import { format } from "date-fns";
+import { store } from "./store";
+import { Profile } from "../models/profile";
 
 // This is a MobX store that will be used to manage the state of the Activity component.
 export default class ActivityStore {
@@ -87,6 +90,15 @@ export default class ActivityStore {
 
     // Helper method to set an activity
     private setActivity = (activity: Activity) => {
+        const user = store.userStore.user;
+
+        // Set the isGoing and isHost properties based on the user's attendance
+        if (user) {
+            activity.isGoing = activity.attendees!.some((a) => a.username === user.username);
+            activity.isHost = activity.hostUsername === user.username;
+            activity.host = activity.attendees!.find((x) => x.username === activity.hostUsername);
+        }
+
         activity.date = new Date(activity.date!);
         this.activityRegistry.set(activity.id, activity);
     };
@@ -97,49 +109,43 @@ export default class ActivityStore {
     };
 
     // Method to create an activity
-    createActivity = async (activity: Activity) => {
-        this.loading = true;
-        activity.id = uuid();
+    createActivity = async (activity: ActivityFormValues) => {
+        const user = store.userStore.user;
+        const attendee = new Profile(user!);
 
         try {
             await agent.Activities.create(activity);
-
+            const newActivity = new Activity(activity);
+            newActivity.attendees = user!.username;
+            newActivity.attendees = [attendee];
+            this.setActivity(newActivity);
             runInAction(() => {
-                // Add the new activity to the activities array
-                this.activityRegistry.set(activity.id, activity);
                 // Set the selected activity to the new activity
-                this.selectedActivity = activity;
-                this.editMode = false;
-                this.loading = false;
+                this.selectedActivity = newActivity;
             });
         } catch (error) {
             console.log(error);
-            runInAction(() => {
-                this.loading = false;
-            });
         }
     };
 
     // Method to update an activity
-    updateActivity = async (activity: Activity) => {
-        this.loading = true;
-
+    updateActivity = async (activity: ActivityFormValues) => {
         try {
             await agent.Activities.update(activity);
 
             runInAction(() => {
-                // Filter out the activity with the specified id and add the updated activity
-                this.activityRegistry.set(activity.id, activity);
-                // Set the selected activity to the updated activity
-                this.selectedActivity = activity;
-                this.editMode = false;
-                this.loading = false;
+                if (activity.id) {
+                    const updatedActivity = { ...this.getActivity(activity.id), ...activity };
+
+                    // Filter out the activity with the specified id and add the updated activity
+                    this.activityRegistry.set(activity.id, updatedActivity as Activity);
+
+                    // Set the selected activity to the updated activity
+                    this.selectedActivity = updatedActivity as Activity;
+                }
             });
         } catch (error) {
             console.log(error);
-            runInAction(() => {
-                this.loading = false;
-            });
         }
     };
 
@@ -160,6 +166,49 @@ export default class ActivityStore {
             runInAction(() => {
                 this.loading = false;
             });
+        }
+    };
+
+    // Update the attendance
+    updateAttendance = async () => {
+        const user = store.userStore.user;
+        this.loading = true;
+
+        // if the activity is going, remove the user from the attendees array and set the isGoing property to false
+        // if the activity is not going, add the user to the attendees array and set the isGoing property to true
+        try {
+            await agent.Activities.attend(this.selectedActivity!.id);
+            runInAction(() => {
+                if (this.selectedActivity?.isGoing) {
+                    this.selectedActivity.attendees = this.selectedActivity.attendees?.filter((a) => a.username !== user?.username);
+                    this.selectedActivity.isGoing = false;
+                } else {
+                    const attendee = new Profile(user!);
+                    this.selectedActivity?.attendees?.push(attendee);
+                    this.selectedActivity!.isGoing = true;
+                }
+                this.activityRegistry.set(this.selectedActivity!.id, this.selectedActivity!);
+            });
+        } catch (error) {
+            console.log(error);
+        } finally {
+            runInAction(() => (this.loading = false));
+        }
+    };
+
+    // Method to cancel an activity toggle
+    cancelActivityToggle = async () => {
+        this.loading = true;
+        try {
+            await agent.Activities.attend(this.selectedActivity!.id);
+            runInAction(() => {
+                this.selectedActivity!.IsCancelled = !this.selectedActivity!.IsCancelled;
+                this.activityRegistry.set(this.selectedActivity!.id, this.selectedActivity!);
+            });
+        } catch (error) {
+            console.log(error);
+        } finally {
+            runInAction(() => (this.loading = false));
         }
     };
 }

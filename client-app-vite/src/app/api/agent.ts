@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "react-toastify";
-import { Activity } from "../models/activity";
+import { Activity, ActivityFormValues } from "../models/activity";
 import { User, UserFormValues } from "../models/user";
 import { router } from "../router/Routes";
 import { store } from "../stores/store";
@@ -19,7 +19,7 @@ axios.defaults.baseURL = "http://localhost:5000/api";
 const responseBody = <T>(response: AxiosResponse<T>) => response.data; // This is the type safety for the response body <T>
 
 // Set the token for the axios requests so that the token is sent with the request
-axios.interceptors.response.use((config) => {
+axios.interceptors.request.use((config) => {
     const token = store.commonStore.token;
     if (token && config.headers) config.headers.Authorization = `Bearer ${token}`;
     return config;
@@ -82,9 +82,10 @@ const requests = {
 const Activities = {
     list: () => requests.get<Activity[]>(`/activities`),
     details: (id: string) => requests.get<Activity>(`/activities/${id}`),
-    create: (activity: Activity) => requests.post<void>(`/activities`, activity),
-    update: (activity: Activity) => requests.put<void>(`/activities/${activity.id}`, activity),
+    create: (activity: ActivityFormValues) => requests.post<void>(`/activities`, activity),
+    update: (activity: ActivityFormValues) => requests.put<void>(`/activities/${activity.id}`, activity),
     delete: (id: string) => requests.del<void>(`/activities/${id}`),
+    attend: (id: string) => requests.post<void>(`/activities/${id}/attend`, {}),
 };
 
 // Set the Account object for the axios requests
