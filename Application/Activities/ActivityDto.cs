@@ -1,8 +1,8 @@
-using System.Collections;
+using Application.Profiles;
 
-namespace Domain
+namespace Application.Activities
 {
-    public class Activity
+    public class ActivityDto
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
@@ -11,9 +11,10 @@ namespace Domain
         public string Category { get; set; }
         public string City { get; set; }
         public string Venue { get; set; }
+        public string HostUsername { get; set; }
         public bool IsCancelled { get; set; }
 
-        // Relation to the AppUser entity
-        public ICollection<ActivityAttendee> Attendees { get; set; } = new List<ActivityAttendee>(); // List is used to initialize the collection
+        // Relation to the Profile interface
+        public ICollection<Profile> Attendees { get; set; }
     }
 }

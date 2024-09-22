@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Application.Activities;
 using Application.Core;
+using Application.Interfaces;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Infrastructure.Security;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -44,6 +46,10 @@ namespace API.Extensions
 
             // Add validators from the Create class
             services.AddValidatorsFromAssemblyContaining<Create>();
+
+            // Add context accessor and user accessor
+            services.AddHttpContextAccessor();
+            services.AddScoped<IUserAccessor, UserAcessor>();
 
             return services;
         }

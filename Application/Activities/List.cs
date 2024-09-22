@@ -1,4 +1,6 @@
 using Application.Core;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -12,22 +14,30 @@ namespace Application.Activities
 {
     public class List
     {
-        public class Query : IRequest<Result<List<Activity>>> { }
+        public class Query : IRequest<Result<List<ActivityDto>>> { }
 
         // This is the class that will handle the request
-        public class Handler : IRequestHandler<Query, Result<List<Activity>>>
+        public class Handler : IRequestHandler<Query, Result<List<ActivityDto>>>
         {
             private readonly DataContext _context;
-            public Handler(DataContext context)
+            private readonly IMapper _mapper;
+            public Handler(DataContext context, IMapper mapper)
             {
+                _mapper = mapper;
                 _context = context;
             }
 
             // This is the method that will be called when the request is made
             // A cancellationToken allow us to cancel the request if needed instead of waiting for it to finish even if the user has navigated away
-            public async Task<Result<List<Activity>>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<Result<List<ActivityDto>>> Handle(Query request, CancellationToken cancellationToken)
             {
-                return Result<List<Activity>>.Success(await _context.Activities.ToListAsync());
+                // Get the list of activities from the database using AutoMapper with Projection method instead of eager loading which is more efficient
+                var activities = await _context.Activities
+                    .ProjectTo<ActivityDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync(cancellationToken);
+
+                // Return the list of activities from the database
+                return Result<List<ActivityDto>>.Success(activities);
             }
         }
     }

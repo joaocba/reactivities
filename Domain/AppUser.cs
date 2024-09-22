@@ -7,5 +7,8 @@ namespace Domain
     {
         public string DisplayName { get; set; }
         public string Bio { get; set; }
+
+        // Relation to the Activity entity
+        public ICollection<ActivityAttendee> Activities { get; set; }
     }
 }
