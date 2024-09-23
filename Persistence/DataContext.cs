@@ -15,6 +15,9 @@ namespace Persistence
         public DbSet<Activity> Activities { get; set; }
         public DbSet<ActivityAttendee> ActivityAttendees { get; set; }
 
+        // DbSet for the Photo entity
+        public DbSet<Photo> Photos { get; set; }
+
         // override OnModelCreating to add the relationship between the ActivityAttendee entity and the Activity entity
         protected override void OnModelCreating(ModelBuilder Builder)
         {

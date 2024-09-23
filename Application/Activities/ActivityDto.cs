@@ -15,6 +15,6 @@ namespace Application.Activities
         public bool IsCancelled { get; set; }
 
         // Relation to the Profile interface
-        public ICollection<Profile> Attendees { get; set; }
+        public ICollection<AttendeeDto> Attendees { get; set; }
     }
 }

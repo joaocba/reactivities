@@ -10,5 +10,8 @@ namespace Domain
 
         // Relation to the Activity entity
         public ICollection<ActivityAttendee> Activities { get; set; }
+
+        // Relation to the Photo entity
+        public ICollection<Photo> Photos { get; set; }
     }
 }
