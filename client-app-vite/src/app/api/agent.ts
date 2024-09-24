@@ -4,6 +4,7 @@ import { Activity, ActivityFormValues } from "../models/activity";
 import { User, UserFormValues } from "../models/user";
 import { router } from "../router/Routes";
 import { store } from "../stores/store";
+import { Photo } from "../models/profile";
 
 // Function to sleep while waiting for the response
 const sleep = (delay: number) => {
@@ -95,10 +96,26 @@ const Account = {
     register: (user: UserFormValues) => requests.post<User>("/account/register", user),
 };
 
+// Set the Profiles object for the axios requests
+const Profiles = {
+    get: (username: string) => requests.get<User>(`/profiles/${username}`),
+    // Method to upload photo
+    uploadPhoto: (file: Blob) => {
+        const formData = new FormData();
+        formData.append("File", file);
+        return axios.post<Photo>("photos", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+    },
+    setMainPhoto: (id: string) => requests.post(`/photos/${id}/setMain`, {}),
+    deletePhot: (id: string) => requests.del(`/photos/${id}`),
+};
+
 // Set the agent object for the axios requests
 const agent = {
     Activities,
     Account,
+    Profiles,
 };
 
 export default agent;
