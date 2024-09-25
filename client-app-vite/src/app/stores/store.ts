@@ -4,6 +4,7 @@ import CommonStore from "./commonStore";
 import UserStore from "./userStore";
 import ModalStore from "./modalStore";
 import ProfileStore from "./profileStore";
+import CommentStore from "./commentStore";
 
 // This is the root store that will hold all the stores in the application.
 interface Store {
@@ -12,6 +13,7 @@ interface Store {
     userStore: UserStore;
     modalStore: ModalStore;
     profileStore: ProfileStore;
+    commentStore: CommentStore;
 }
 
 // Initialize the root store with the activity store.
@@ -21,6 +23,7 @@ export const store: Store = {
     userStore: new UserStore(),
     modalStore: new ModalStore(),
     profileStore: new ProfileStore(),
+    commentStore: new CommentStore(),
 };
 
 export const StoreContext = createContext(store);

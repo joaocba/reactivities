@@ -15,5 +15,8 @@ namespace Domain
 
         // Relation to the AppUser entity
         public ICollection<ActivityAttendee> Attendees { get; set; } = new List<ActivityAttendee>(); // List is used to initialize the collection
+
+        // Relation to the Comment entity
+        public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     }
 }

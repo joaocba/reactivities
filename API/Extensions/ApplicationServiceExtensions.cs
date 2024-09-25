@@ -32,7 +32,11 @@ namespace API.Extensions
             {
                 opt.AddPolicy("CorsPolicy", policy =>
                 {
-                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
+                    policy
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials()
+                        .WithOrigins("http://localhost:3000");
                 });
             });
 
@@ -57,6 +61,9 @@ namespace API.Extensions
 
             // Add cloudinary settings
             services.Configure<CloudinarySettings>(config.GetSection("Cloudinary"));
+
+            // Service for SignalR
+            services.AddSignalR();
 
             return services;
         }

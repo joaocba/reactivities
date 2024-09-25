@@ -18,6 +18,9 @@ namespace Persistence
         // DbSet for the Photo entity
         public DbSet<Photo> Photos { get; set; }
 
+        // DbSet for the Comment entity
+        public DbSet<Comment> Comments { get; set; }
+
         // override OnModelCreating to add the relationship between the ActivityAttendee entity and the Activity entity
         protected override void OnModelCreating(ModelBuilder Builder)
         {
@@ -36,6 +39,12 @@ namespace Persistence
                 .HasOne(aa => aa.Activity)
                 .WithMany(a => a.Attendees)
                 .HasForeignKey(aa => aa.ActivityId);
+
+            // Delete comments when the activity is deleted
+            Builder.Entity<Comment>()
+                .HasOne(a => a.Activity)
+                .WithMany(c => c.Comments)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

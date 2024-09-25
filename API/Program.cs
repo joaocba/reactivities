@@ -1,5 +1,6 @@
 using API.Extensions;
 using API.Middleware;
+using API.SignalR;
 using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -43,6 +44,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Add the SignalR hubs
+app.MapHub<ChatHub>("/chat");
 
 // Migrate the database using scope which will be disposed after the migration (clean up)
 using var scrope = app.Services.CreateScope();
