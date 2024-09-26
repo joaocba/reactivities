@@ -1,8 +1,6 @@
-import { User } from "./../models/user";
 import { Activity, ActivityFormValues } from "./../models/activity";
 import { makeAutoObservable, runInAction } from "mobx";
 import agent from "../api/agent";
-import { v4 as uuid } from "uuid";
 import { format } from "date-fns";
 import { store } from "./store";
 import { Profile } from "../models/profile";
@@ -116,7 +114,7 @@ export default class ActivityStore {
         try {
             await agent.Activities.create(activity);
             const newActivity = new Activity(activity);
-            newActivity.attendees = user!.username;
+            newActivity.hostUsername = user!.username;
             newActivity.attendees = [attendee];
             this.setActivity(newActivity);
             runInAction(() => {
@@ -214,5 +212,21 @@ export default class ActivityStore {
 
     clearSelectedActivity = () => {
         this.selectedActivity = undefined;
+    };
+
+    // Helper method to update the attendee following
+    updateAttendeeFollowing = (username: string) => {
+        this.activityRegistry.forEach((activity) => {
+            activity.attendees.forEach((attendee: Profile) => {
+                if (attendee.username === username) {
+                    if (attendee.following) {
+                        attendee.followersCount--;
+                    } else {
+                        attendee.followersCount++;
+                    }
+                    attendee.following = !attendee.following;
+                }
+            });
+        });
     };
 }

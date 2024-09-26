@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
-import React from "react";
-import { Grid, Segment, Item, Header, Statistic, Divider, Reveal, Button } from "semantic-ui-react";
+import { Grid, Segment, Item, Header, Statistic, Divider } from "semantic-ui-react";
 import { Profile } from "../../app/models/profile";
+import FollowButton from "./FollowButton";
 
 interface Props {
     profile: Profile;
@@ -33,34 +33,15 @@ export default observer(function ProfileHeader({ profile }: Props) {
                     <Statistic.Group widths={2}>
                         <Statistic
                             label="Followers"
-                            value="5"
+                            value={profile.followersCount}
                         />
                         <Statistic
                             label="Following"
-                            value="42"
+                            value={profile.followingsCount}
                         />
                     </Statistic.Group>
                     <Divider />
-                    <Reveal animated="move">
-                        <Reveal.Content
-                            visible
-                            style={{ width: "100%" }}
-                        >
-                            <Button
-                                fluid
-                                color="teal"
-                                content="Following"
-                            />
-                        </Reveal.Content>
-                        <Reveal.Content hidden>
-                            <Button
-                                fluid
-                                basic
-                                color={true ? "red" : "green"}
-                                content={true ? "Unfollow" : "Follow"}
-                            />
-                        </Reveal.Content>
-                    </Reveal>
+                    <FollowButton profile={profile} />
                 </Grid.Column>
             </Grid>
         </Segment>

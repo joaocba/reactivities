@@ -13,5 +13,9 @@ namespace Domain
 
         // Relation to the Photo entity
         public ICollection<Photo> Photos { get; set; }
+
+        // Relation to the UserFollowing entity
+        public ICollection<UserFollowing> Followings { get; set; }
+        public ICollection<UserFollowing> Followers { get; set; }
     }
 }
