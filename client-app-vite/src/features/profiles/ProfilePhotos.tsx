@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import React, { SyntheticEvent, useState } from "react";
+import { SyntheticEvent, useState } from "react";
 import { Tab, Header, Card, Image, Grid, Button } from "semantic-ui-react";
 import { Photo, Profile } from "../../app/models/profile";
 import { useStore } from "../../app/stores/store";
@@ -32,6 +32,7 @@ export default observer(function ProfilePhotos({ profile }: Props) {
     }
 
     return (
+        // @ts-expect-error ignore error
         <Tab.Pane>
             <Grid>
                 <Grid.Column width="16">

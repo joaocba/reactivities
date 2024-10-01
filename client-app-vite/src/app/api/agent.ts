@@ -14,8 +14,11 @@ const sleep = (delay: number) => {
     });
 };
 
-// Set the base URL for the axios requests
-axios.defaults.baseURL = "http://localhost:5000/api";
+// Set the base URL for the axios requests (dev)
+/* axios.defaults.baseURL = "http://localhost:5000/api"; */
+
+// Set the URL for production
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 
 // Set the token for the axios requests
 const responseBody = <T>(response: AxiosResponse<T>) => response.data; // This is the type safety for the response body <T>
@@ -30,7 +33,7 @@ axios.interceptors.request.use((config) => {
 // Set the request interceptor for the axios requests, an interceptor is a middleware that can intercept the request and response
 axios.interceptors.response.use(
     async (response) => {
-        await sleep(1000);
+        if (import.meta.env.DEV) await sleep(1000);
 
         // Get the pagination header from the response and set the pagination data
         const pagination = response.headers["pagination"];

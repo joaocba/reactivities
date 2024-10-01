@@ -43,6 +43,11 @@ app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Look inside the wwwroot folder for  static files
+app.UseDefaultFiles();
+app.UseStaticFiles(); // this will serve the content from the wwwroot folder
+app.MapFallbackToController("Index", "Fallback");
+
 app.MapControllers();
 
 // Add the SignalR hubs

@@ -1,6 +1,5 @@
-import { axios } from "axios";
 import { Activity, ActivityFormValues } from "./../models/activity";
-import { keys, makeAutoObservable, reaction, runInAction } from "mobx";
+import { makeAutoObservable, reaction, runInAction } from "mobx";
 import agent from "../api/agent";
 import { format } from "date-fns";
 import { store } from "./store";
