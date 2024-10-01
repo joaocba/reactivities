@@ -4,7 +4,8 @@ import { Activity, ActivityFormValues } from "../models/activity";
 import { User, UserFormValues } from "../models/user";
 import { router } from "../router/Routes";
 import { store } from "../stores/store";
-import { Photo, Profile } from "../models/profile";
+import { Photo, Profile, UserActivity } from "../models/profile";
+import { PaginatedResult } from "../models/pagination";
 
 // Function to sleep while waiting for the response
 const sleep = (delay: number) => {
@@ -30,6 +31,14 @@ axios.interceptors.request.use((config) => {
 axios.interceptors.response.use(
     async (response) => {
         await sleep(1000);
+
+        // Get the pagination header from the response and set the pagination data
+        const pagination = response.headers["pagination"];
+        if (pagination) {
+            response.data = new PaginatedResult(response.data, JSON.parse(pagination));
+            return response as AxiosResponse<PaginatedResult<unknown>>;
+        }
+
         return response;
     },
     (error: AxiosError) => {
@@ -81,7 +90,7 @@ const requests = {
 
 // Set the Activities object for the axios requests
 const Activities = {
-    list: () => requests.get<Activity[]>(`/activities`),
+    list: (params: URLSearchParams) => axios.get<PaginatedResult<Activity[]>>(`/activities`, { params }).then(responseBody),
     details: (id: string) => requests.get<Activity>(`/activities/${id}`),
     create: (activity: ActivityFormValues) => requests.post<void>(`/activities`, activity),
     update: (activity: ActivityFormValues) => requests.put<void>(`/activities/${activity.id}`, activity),
@@ -114,6 +123,8 @@ const Profiles = {
 
     updateFollowing: (username: string) => requests.post(`/follow/${username}`, {}),
     listFollowings: (username: string, predicate: string) => requests.get<Profile[]>(`/follow/${username}?predicate=${predicate}`),
+
+    listActivities: (username: string, predicate: string) => requests.get<UserActivity[]>(`/profiles/${username}/activities?predicate=${predicate}`),
 };
 
 // Set the agent object for the axios requests
