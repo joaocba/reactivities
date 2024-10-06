@@ -7,6 +7,7 @@ using Application.Core;
 using Application.Interfaces;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Infrastructure.Email;
 using Infrastructure.Photos;
 using Infrastructure.Security;
 using MediatR;
@@ -60,6 +61,9 @@ namespace API.Extensions
 
             // Add the photo accessor
             services.AddScoped<IPhotoAccessor, PhotoAccessor>();
+
+            // Add SendGrid email service
+            services.AddScoped<EmailSender>();
 
             // Add cloudinary settings
             services.Configure<CloudinarySettings>(config.GetSection("Cloudinary"));

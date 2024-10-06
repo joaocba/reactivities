@@ -114,6 +114,8 @@ const Account = {
     login: (user: UserFormValues) => requests.post<User>("/account/login", user),
     register: (user: UserFormValues) => requests.post<User>("/account/register", user),
     refreshToken: () => requests.post<User>("/account/refresh-token", {}),
+    verifyEmail: (token: string, email: string) => requests.post<void>(`/account/verifyEmail?token=${token}&email=${email}`, {}),
+    resendEmailConfirm: (email: string) => requests.get(`/account/resendEmailConfirmationLink?email=${email}`),
 };
 
 // Set the Profiles object for the axios requests
