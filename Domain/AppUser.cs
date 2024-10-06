@@ -17,5 +17,8 @@ namespace Domain
         // Relation to the UserFollowing entity
         public ICollection<UserFollowing> Followings { get; set; }
         public ICollection<UserFollowing> Followers { get; set; }
+
+        // Relation to the RefreshToken entity
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }
